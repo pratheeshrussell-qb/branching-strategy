@@ -1,0 +1,42 @@
+name: Create Hot fix branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseBranch:
+        description: 'Base branch name'
+        required: true
+        default: 'main'
+      releaseBranch:
+        description: 'Release branch name'
+        required: true
+      new_branch_name:
+        description: 'New branch name'
+        required: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+         fetch-depth: 0
+
+      - name: Find merge base and create new branch
+        run: |
+         BASE_BRANCH=${{ github.event.inputs.baseBranch }}
+         RELEASE_BRANCH=${{ github.event.inputs.releaseBranch }}
+         NEW_BRANCH=${{ github.event.inputs.new_branch_name }}
+
+         echo "Fetching branches..."
+         git fetch origin $BASE_BRANCH $RELEASE_BRANCH
+
+         echo "Finding merge-base between $BASE_BRANCH and $RELEASE_BRANCH..."
+         BASE_COMMIT=$(git merge-base origin/$BASE_BRANCH origin/$RELEASE_BRANCH)
+
+         echo "Merge base is $BASE_COMMIT"
+         echo "Creating new branch $NEW_BRANCH from merge base"
+         git checkout -b "$NEW_BRANCH" "$BASE_COMMIT"
+
+         echo "Pushing new branch $NEW_BRANCH"
+         git push origin "$NEW_BRANCH"
