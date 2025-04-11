@@ -13,8 +13,10 @@ on:
       new_branch_name:
         description: 'New branch name'
         required: true
+permissions:
+   contents: write
 jobs:
-  build:
+  create-fix-branch:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
